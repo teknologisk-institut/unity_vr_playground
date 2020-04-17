@@ -43,6 +43,5 @@ namespace RosSharp.RosBridgeClient
         }
 
         protected abstract void ReceiveMessage(T message);
-
     }
 }

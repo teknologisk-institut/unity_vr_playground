@@ -1,22 +1,21 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using RosSharp.RosBridgeClient;
 
-public class RobotVisualization : MonoBehaviour
+[RequireComponent (typeof(JointStatePatcher))]
+public class TrailVisualization : MonoBehaviour
 {
-    [HideInInspector] public GameObject Indicator { get; private set; }
-
-    [SerializeField] Material _indicatorMaterial;
-    [SerializeField] bool _drawTrail = false;
-    [SerializeField] float _drawRate = .5f;
-    [SerializeField] Material _trailMaterial;
+    [SerializeField] float _drawRate = .1f;
+    [SerializeField] Material _material;
     [SerializeField] int _trailPoolSize;
+    [SerializeField] int _trailRenderQueue = 2001;
+    [SerializeField] int _robotRenderQueue = 2002;
 
+    GameObject _template;
     GameObject[] _trailPool;
     GameObject _trailHolder;
     Transform[] _childTransforms;
-    bool isDrawing = false;
     IEnumerator drawRoutine;
 
     void Awake()
@@ -27,13 +26,13 @@ public class RobotVisualization : MonoBehaviour
 
         foreach (MeshRenderer mr in meshRenderers)
         {
-            mr.material.renderQueue = 2002;
+            mr.material.renderQueue = _robotRenderQueue;
         }
 
-        Indicator = new GameObject(gameObject.name + "_indicator");
-        BuildIndicator(transform, Indicator);
+        _template = new GameObject(gameObject.name + "_trail_template");
+        BuildTemplate(transform, _template);
 
-        Indicator.SetActive(false);
+        _template.SetActive(false);
 
         _trailHolder = new GameObject("RobotTrail");
         _trailPool = new GameObject[_trailPoolSize];
@@ -46,30 +45,22 @@ public class RobotVisualization : MonoBehaviour
         drawRoutine = DrawRobotTrail(_drawRate);
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        if (_drawTrail)
-        {
-            if (!isDrawing)
-            {
-                StartCoroutine(drawRoutine);
+        _trailHolder.SetActive(true);
 
-                isDrawing = true;
-            }
-        }
-        else
-        {
-            if (isDrawing)
-            {
-                StopCoroutine(drawRoutine);
-                HideRobotTrail();
-
-                isDrawing = false;
-            }
-        }
+        StartCoroutine(drawRoutine);
     }
 
-    void BuildIndicator(Transform parent, GameObject newParent)
+    private void OnDisable()
+    {
+        StopCoroutine(drawRoutine);
+        HideRobotTrail();
+
+        _trailHolder.SetActive(false);
+    }
+
+    void BuildTemplate(Transform parent, GameObject newParent)
     {
         for (int i = 0; i < parent.childCount; i++)
         {
@@ -89,12 +80,12 @@ public class RobotVisualization : MonoBehaviour
             if (meshRenderer != null)
             {
                 MeshRenderer newMeshRenderer = newChild.AddComponent<MeshRenderer>();
-                newMeshRenderer.material = _indicatorMaterial;
+                newMeshRenderer.material = _material;
                 newMeshRenderer.receiveShadows = false;
                 newMeshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             }
 
-            BuildIndicator(parent.GetChild(i), newChild);
+            BuildTemplate(parent.GetChild(i), newChild);
         }
     }
 
@@ -102,7 +93,7 @@ public class RobotVisualization : MonoBehaviour
     {
         int i = 0;
 
-        while(_drawTrail)
+        while(true)
         {
             if (i == (_trailPoolSize - 1))
                 i = 0;
@@ -138,13 +129,13 @@ public class RobotVisualization : MonoBehaviour
 
     GameObject CreateTrailElement()
     {
-        GameObject go = Instantiate(Indicator, _trailHolder.transform);
+        GameObject go = Instantiate(_template, _trailHolder.transform);
 
         MeshRenderer[] meshRenderers = go.GetComponentsInChildren<MeshRenderer>();
         for (int i = 0; i < meshRenderers.Length; i++)
         {
-            meshRenderers[i].materials = new Material[1] { _trailMaterial };
-            meshRenderers[i].material.renderQueue = 2001;
+            meshRenderers[i].materials = new Material[1] { _material };
+            meshRenderers[i].material.renderQueue = _trailRenderQueue;
         }
 
         go.SetActive(false);

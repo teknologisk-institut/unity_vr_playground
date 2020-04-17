@@ -1,4 +1,8 @@
-﻿using UnityEditor;
+﻿/*
+ * NOTE: This is an editor script and must be placed in the Editor folder for it to work.
+ */
+
+using UnityEditor;
 using UnityEngine;
 using System;
 
@@ -8,7 +12,7 @@ public class MakeIndicator : EditorWindow
     GameObject indicator;
     Material material;
 
-    [MenuItem("Window/Custom/Make URDF Indicator")]
+    [MenuItem("Window/DTI/Make URDF Indicator")]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(MakeIndicator));
@@ -22,7 +26,7 @@ public class MakeIndicator : EditorWindow
         if (GUILayout.Button("Make"))
         {
             indicator = Instantiate(go);
-            indicator.name = go.name + "_indicator";
+            indicator.name = go.name + " Indicator";
 
             Utility.DestroyImmediateComponentsInChildren(indicator, typeof(MonoBehaviour));
             Utility.DestroyImmediateComponentsInChildren(indicator, typeof(Joint));
