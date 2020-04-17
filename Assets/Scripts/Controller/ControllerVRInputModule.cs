@@ -11,11 +11,25 @@ public class ControllerVRInputModule : BaseInputModule
     private GameObject m_CurrentObject = null;
     private PointerEventData m_Data = null;
 
+    public Transform SpawnPosition;
+    public GameObject ObjectToCreate;
+    public int i;
+    public bool spawning = false;
+
+    public void Update()
+    {
+        if (Time.time > i && spawning)
+        {
+            i += 1;
+            Instantiate(ObjectToCreate, SpawnPosition);
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
 
-        m_Data = new PointerEventData(eventSystem);
+        m_Data = new PointerEventData(eventSystem);        
     }
 
     public override void Process()
@@ -79,5 +93,12 @@ public class ControllerVRInputModule : BaseInputModule
         data.pressPosition = Vector2.zero;
         data.pointerPress = null;
         data.rawPointerPress = null;
+    }
+
+
+
+    void SpawnObject()
+    {
+        spawning = !spawning;
     }
 }
