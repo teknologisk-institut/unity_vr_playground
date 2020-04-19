@@ -1,9 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
-using RosSharp.RosBridgeClient;
 
-[RequireComponent (typeof(JointStatePatcher))]
 public class TrailVisualization : MonoBehaviour
 {
     [SerializeField] float _drawRate = .1f;
